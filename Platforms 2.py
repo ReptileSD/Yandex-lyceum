@@ -41,32 +41,39 @@ class Hero(pygame.sprite.Sprite):
                 self.falling = False
             if args[0].type == pygame.KEYDOWN:
                 keys = pygame.key.get_pressed()
-                if keys[pygame.K_DOWN]:  # todo: k_up, k_down
+                if keys[pygame.K_DOWN] and sprites:
                     self.rect.y += 10
                     sprite = pygame.sprite.spritecollide(self, all_platforms, False)
-                    if
+                    if sprite:
+                        self.rect.y = min([i.rect.y for i in sprite]) - sprite[0].image.get_height()
+                if keys[pygame.K_UP] and sprites:
+                    self.rect.y -= 10
+                    sprite = pygame.sprite.spritecollide(self, all_platforms, False)
+                    if sprite:
+                        self.rect.y = max(i.rect.y for i in sprite) + sprite[0].image.get_height()
                 if keys[pygame.K_LEFT]:
                     self.rect.x -= 10
                     sprites = pygame.sprite.spritecollide(self, all_platforms, False)
                     if sprites:
-                        self.rect.x = sprites[0].rect.x + sprites[0].image.get_width() + 1
+                        self.rect.x = min([i.rect.x for i in sprites]) + sprites[0].image.get_width()
                 if keys[pygame.K_RIGHT]:
                     self.rect.x += 10
                     sprites = pygame.sprite.spritecollide(self, all_platforms, False)
                     if sprites:
-                        self.rect.x = sprites[0].rect.x - sprites[0].image.get_width() - 1
+                        self.rect.x = max([i.rect.x for i in sprites]) - self.image.get_width()
 
                 return
 
-    def fall(self):
-        self.rect.y += 50 / FPS * int(self.falling)
-        sprites = pygame.sprite.spritecollide(self, all_platforms, False)
-        if sprites:
-            self.rect.y = sprites[0].rect.y - \
+    def fall(self, v=50):
+        self.rect.y += v / FPS * int(self.falling)
+        sprite = pygame.sprite.spritecollide(self, all_platforms, False)
+        sprites = pygame.sprite.spritecollide(self, all_walls, False)
+        if sprite:
+            self.rect.y = sprite[0].rect.y - \
                           self.image.get_height()
             self.falling = False
         else:
-            self.falling = True
+            self.falling = not sprites
 
     def move(self, pos):
         self.rect.x, self.rect.y = pos
@@ -88,13 +95,15 @@ all_platforms = pygame.sprite.Group()
 all_walls = pygame.sprite.Group()
 all_heroes = pygame.sprite.Group()
 
-
 while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
-        if event.type == pygame.MOUSEBUTTONDOWN: # todo: walls
+        if event.type == pygame.MOUSEBUTTONDOWN:
             if event.button == 1:
+                if pygame.key.get_pressed()[pygame.K_LCTRL]:
+                    sprite = Wall(event.pos, all_sprites, all_walls)
+                    continue
                 sprite = Platform(event.pos, all_sprites, all_platforms)
             if event.button == 3:
                 if not all_heroes:
