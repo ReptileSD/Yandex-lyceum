@@ -4,10 +4,7 @@ import sys
 
 class Tile(pygame.sprite.Sprite):
     def __init__(self, tile_type, pos_x, pos_y):
-        if tile_type == 'wall':
-            super().__init__(tiles_group, walls_group, all_sprites)
-        else:
-            super().__init__(tiles_group, all_sprites)
+        super().__init__(tiles_group, all_sprites)
         self.image = tile_images[tile_type]
         self.rect = self.image.get_rect().move(tile_width * pos_x, tile_height * pos_y)
 
@@ -19,21 +16,16 @@ class Player(pygame.sprite.Sprite):
         self.rect = self.image.get_rect().move(tile_width * pos_x + 15, tile_height * pos_y + 5)
 
     def update(self, *args):
-        if args and args[0].type == pygame.KEYDOWN:
-            x, y = self.rect.x, self.rect.y
-            if args[0].key == pygame.K_w:
-                self.rect = self.rect.move(0, -tile_height)
+        if args and type(args[0]) == tuple:
+            if args[0][pygame.K_w]:
+                self.rect = self.rect.move(0, -10)
                 print('up')
-            if args[0].key == pygame.K_s:
-                self.rect = self.rect.move(0, tile_height)
-            if args[0].key == pygame.K_a:
-                self.rect = self.rect.move(-tile_width, 0)
-            if args[0].key == pygame.K_d:
-                self.rect = self.rect.move(tile_width, 0)
-            print(self.rect.x, self.rect.y)
-            if pygame.sprite.spritecollideany(self, walls_group):
-                self.rect.x, self.rect.y = x, y
-                print(self.rect.x, self.rect.y)
+            if args[0][pygame.K_s]:
+                self.rect = self.rect.move(0, 10)
+            if args[0][pygame.K_a]:
+                self.rect = self.rect.move(-10, 0)
+            if args[0][pygame.K_d]:
+                self.rect = self.rect.move(10, 0)
 
 
 def load_level(filename):
@@ -122,7 +114,6 @@ player = None
 # группы спрайтов
 all_sprites = pygame.sprite.Group()
 tiles_group = pygame.sprite.Group()
-walls_group = pygame.sprite.Group()
 player_group = pygame.sprite.Group()
 level = load_level('level.txt')
 player, level_x, level_y = generate_level(level)
@@ -133,7 +124,7 @@ while True:
             terminate()
         if event.type == pygame.KEYDOWN:
             print(event.key)
-        all_sprites.update(event)
+    all_sprites.update(pygame.key.get_pressed())
 
     screen.fill((0, 0, 0))
     tiles_group.draw(screen)
