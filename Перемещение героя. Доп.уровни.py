@@ -122,7 +122,7 @@ def start_screen():
         clock.tick(FPS)
 
 
-filename = input()
+filename = input('Введите название файла: ')
 pygame.init()
 size = width, height = 800, 800
 
